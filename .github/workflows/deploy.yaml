@@ -14,7 +14,7 @@ env:
   HELM_CHART_PATH: "./k8s/values.yaml"
   HELM_CHART_YAML: "./k8s/Chart.yaml"
   IMAGE_REGISTRY: "registry.cgraaaj.in"
-  IMAGE_REPOSITORY: "option-scope"
+  IMAGE_REPOSITORY: "stock-x"
   IMAGE_NAME: "optionscope-app"
   IMAGE_TAG: ${{ github.sha }}
   BUILDKIT_NO_CLIENT_TOKEN: "true"
