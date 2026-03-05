@@ -78,9 +78,9 @@ const INTERVAL_MINUTES: Record<string, number> = {
 };
 
 /**
- * Aggregate 1-minute candles into larger intervals.
- * Groups by flooring each candle's timestamp to the interval boundary,
- * then computes OHLCV per group.
+ * Aggregate candles into larger intervals.
+ * Groups by flooring each candle's timestamp to the interval boundary
+ * (same epoch-alignment as PostgreSQL time_bucket), then computes OHLCV.
  */
 export function aggregateCandles(
   candles: import("@/types").Candle[],
@@ -89,12 +89,13 @@ export function aggregateCandles(
   const minutes = INTERVAL_MINUTES[targetInterval];
   if (!minutes || minutes <= 1 || candles.length === 0) return candles;
 
-  const bucketMs = minutes * 60 * 1000;
+  const bucketSec = minutes * 60;
   const groups = new Map<number, import("@/types").Candle[]>();
 
   for (const c of candles) {
-    const ts = new Date(c.bucket).getTime();
-    const key = Math.floor(ts / bucketMs) * bucketMs;
+    const sec = toUnixSeconds(c.bucket);
+    if (sec <= 0) continue;
+    const key = Math.floor(sec / bucketSec) * bucketSec;
     const arr = groups.get(key);
     if (arr) arr.push(c);
     else groups.set(key, [c]);
@@ -103,7 +104,7 @@ export function aggregateCandles(
   const result: import("@/types").Candle[] = [];
   for (const [key, bars] of groups) {
     result.push({
-      bucket: new Date(key).toISOString(),
+      bucket: new Date(key * 1000).toISOString(),
       open: bars[0].open,
       high: Math.max(...bars.map((b) => b.high)),
       low: Math.min(...bars.map((b) => b.low)),
@@ -113,7 +114,5 @@ export function aggregateCandles(
     });
   }
 
-  return result.sort(
-    (a, b) => new Date(a.bucket).getTime() - new Date(b.bucket).getTime()
-  );
+  return result.sort((a, b) => toUnixSeconds(a.bucket) - toUnixSeconds(b.bucket));
 }

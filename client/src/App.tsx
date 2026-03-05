@@ -1,7 +1,9 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/Header";
 import { OptionChainTable } from "@/components/option-chain/OptionChainTable";
+import { HolidayList } from "@/components/option-chain/HolidayList";
 import { CandlestickChart } from "@/components/chart/CandlestickChart";
 import { ChartHeader } from "@/components/chart/ChartHeader";
 import { IntervalSelector } from "@/components/chart/IntervalSelector";
@@ -11,7 +13,7 @@ import { useExpiries } from "@/hooks/useExpiries";
 import { useInstruments } from "@/hooks/useInstruments";
 import { useCandles } from "@/hooks/useCandles";
 import { useEquityCandles } from "@/hooks/useEquityCandles";
-import { startOfDayIST, endOfDayIST } from "@/lib/utils";
+import { startOfDayIST, endOfDayIST, formatDate } from "@/lib/utils";
 import type { Stock, Instrument, Interval } from "@/types";
 
 function App() {
@@ -49,12 +51,25 @@ function App() {
   const {
     data: candles = [],
     isLoading: candlesLoading,
+    isFetched: candlesFetched,
   } = useCandles(
     selectedInstrument?.instrument_seq,
     interval,
     startOfDay,
     endOfDay
   );
+
+  const toastShownRef = useRef<string>("");
+  useEffect(() => {
+    if (!candlesFetched || candlesLoading || !selectedInstrument) return;
+    const key = `${selectedInstrument.instrument_seq}-${formatDate(selectedDate)}`;
+    if (candles.length === 0 && toastShownRef.current !== key) {
+      toastShownRef.current = key;
+      toast.warning("No candle data available", {
+        description: `No data for ${selectedInstrument.trading_symbol} on ${formatDate(selectedDate)}. This could be a holiday or non-trading day.`,
+      });
+    }
+  }, [candles, candlesFetched, candlesLoading, selectedInstrument, selectedDate]);
 
   const {
     data: equityCandles,
@@ -125,15 +140,18 @@ function App() {
               </span>
             )}
           </div>
-          <div className="flex-1 min-h-0">
-            <OptionChainTable
-              rows={optionChain}
-              isLoading={chainLoading}
-              onInstrumentSelect={handleInstrumentSelect}
-              selectedInstrumentId={selectedInstrument?.id}
-              startOfDay={startOfDay}
-              endOfDay={endOfDay}
-            />
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-auto">
+              <OptionChainTable
+                rows={optionChain}
+                isLoading={chainLoading}
+                onInstrumentSelect={handleInstrumentSelect}
+                selectedInstrumentId={selectedInstrument?.id}
+                startOfDay={startOfDay}
+                endOfDay={endOfDay}
+              />
+            </div>
+            <HolidayList selectedDate={selectedDate} />
           </div>
         </div>
 
