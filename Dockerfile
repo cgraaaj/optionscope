@@ -1,23 +1,28 @@
 # syntax=docker/dockerfile:1.6
 # Multi-stage build for OptionScope (React client + Express BFF)
+# Uses npm workspaces — the single root lockfile drives all installs.
 
-# Stage 1: Build React client
-FROM node:20-alpine AS client-build
-WORKDIR /app/client
-COPY client/package*.json ./
+# Stage 1: Install all dependencies (shared across build stages)
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY client/package.json ./client/
+COPY server/package.json ./server/
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
-COPY client/ .
-RUN npm run build
 
-# Stage 2: Build Express server
-FROM node:20-alpine AS server-build
-WORKDIR /app/server
-COPY server/package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
-COPY server/ .
-RUN npx tsc
+# Stage 2: Build React client
+FROM deps AS client-build
+WORKDIR /app
+COPY client/ ./client/
+RUN npm run build --workspace=client
 
-# Stage 3: Production
+# Stage 3: Build Express server
+FROM deps AS server-build
+WORKDIR /app
+COPY server/ ./server/
+RUN npm run build --workspace=server
+
+# Stage 4: Production
 FROM node:20-alpine AS production
 
 RUN apk add --no-cache dumb-init curl
@@ -27,8 +32,9 @@ RUN addgroup -g 5400 -S appgroup && \
 
 WORKDIR /app
 
-COPY server/package*.json ./server/
-RUN --mount=type=cache,target=/root/.npm cd server && npm ci --omit=dev --no-audit --no-fund
+COPY package.json package-lock.json ./
+COPY server/package.json ./server/
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --no-audit --no-fund --workspace=server
 
 COPY --from=server-build /app/server/dist ./server/dist
 COPY --from=client-build /app/client/dist ./client/dist
