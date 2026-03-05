@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: registry.cgraaaj.in/option-scope/optionscope-app
+  repository: registry.cgraaaj.in/stock-x/optionscope-app
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "21aa19c"
 
 imagePullSecrets: []
 nameOverride: ""
