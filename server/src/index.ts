@@ -50,13 +50,11 @@ const UPSTOX_INTERVAL_MAP: Record<string, string> = {
 };
 
 /**
- * Upstox returns IST timestamps like "2025-06-30T09:15:00+05:30".
- * TickerFlow stores IST clock times as UTC ("2025-06-30T09:15:00Z").
- * To align both on the chart x-axis, strip the IST offset and label as UTC.
+ * Convert Upstox IST timestamps ("2026-03-04T09:15:00+05:30") to UTC ISO strings
+ * ("2026-03-04T03:45:00.000Z") so they align with TickerFlow's UTC timestamps.
  */
-function normalizeUpstoxTimestamp(ts: string): string {
-  const m = ts.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
-  return m ? m[1] + "Z" : ts;
+function toUTC(ts: string): string {
+  return new Date(ts).toISOString();
 }
 
 app.get(
@@ -79,7 +77,7 @@ app.get(
       if (data.status === "success" && data.data?.candles) {
         const candles = data.data.candles
           .map((c: (string | number)[]) => ({
-            bucket: normalizeUpstoxTimestamp(c[0] as string),
+            bucket: toUTC(c[0] as string),
             open: c[1],
             high: c[2],
             low: c[3],

@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/Header";
 import { OptionChainTable } from "@/components/option-chain/OptionChainTable";
-import { HolidayList } from "@/components/option-chain/HolidayList";
+import { HolidayList, getNonTradingReason } from "@/components/option-chain/HolidayList";
 import { CandlestickChart } from "@/components/chart/CandlestickChart";
 import { ChartHeader } from "@/components/chart/ChartHeader";
 import { IntervalSelector } from "@/components/chart/IntervalSelector";
@@ -59,14 +59,28 @@ function App() {
     endOfDay
   );
 
-  const toastShownRef = useRef<string>("");
+  const dateToastRef = useRef<string>("");
+  useEffect(() => {
+    const dateKey = formatDate(selectedDate);
+    if (dateToastRef.current === dateKey) return;
+    const reason = getNonTradingReason(selectedDate);
+    if (reason) {
+      dateToastRef.current = dateKey;
+      toast.warning("Non-trading day", {
+        description: `${formatDate(selectedDate)} is ${reason}. Market is closed.`,
+      });
+    }
+  }, [selectedDate]);
+
+  const candleToastRef = useRef<string>("");
   useEffect(() => {
     if (!candlesFetched || candlesLoading || !selectedInstrument) return;
     const key = `${selectedInstrument.instrument_seq}-${formatDate(selectedDate)}`;
-    if (candles.length === 0 && toastShownRef.current !== key) {
-      toastShownRef.current = key;
+    if (candles.length === 0 && candleToastRef.current !== key) {
+      if (getNonTradingReason(selectedDate)) return;
+      candleToastRef.current = key;
       toast.warning("No candle data available", {
-        description: `No data for ${selectedInstrument.trading_symbol} on ${formatDate(selectedDate)}. This could be a holiday or non-trading day.`,
+        description: `No data for ${selectedInstrument.trading_symbol} on ${formatDate(selectedDate)}.`,
       });
     }
   }, [candles, candlesFetched, candlesLoading, selectedInstrument, selectedDate]);

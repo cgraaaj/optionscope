@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 interface Holiday {
   date: string;
@@ -41,6 +41,20 @@ const NSE_HOLIDAYS: Record<number, Holiday[]> = {
     { date: "2026-12-25", name: "Christmas" },
   ],
 };
+
+/**
+ * Check if a date is a non-trading day (weekend or NSE holiday).
+ * Returns a reason string if non-trading, or null if it's a trading day.
+ */
+export function getNonTradingReason(date: Date): string | null {
+  const day = date.getDay();
+  if (day === 0) return "Sunday";
+  if (day === 6) return "Saturday";
+  const ds = formatDate(date);
+  const holidays = NSE_HOLIDAYS[date.getFullYear()];
+  const match = holidays?.find((h) => h.date === ds);
+  return match ? match.name : null;
+}
 
 function formatHolidayDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
