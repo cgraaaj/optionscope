@@ -13,7 +13,7 @@ serviceAccount:
   create: true
   automount: true
   annotations: {}
-  name: ""
+  name: "optionscope-app-sa"
 
 podAnnotations: {}
 podLabels: {}
