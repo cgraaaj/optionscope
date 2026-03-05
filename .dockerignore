@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.git
+.github
+.env
+*.log
+.DS_Store
+.vite
+client/dist
+server/dist
+k8s
+*.md
+.cursor

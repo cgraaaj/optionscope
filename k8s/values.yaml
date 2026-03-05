@@ -1,0 +1,127 @@
+replicaCount: 1
+
+image:
+  repository: registry.cgraaaj.in/option-scope/optionscope-app
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 5400
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 5400
+  runAsGroup: 5400
+
+service:
+  type: ClusterIP
+  port: 3000
+
+env:
+  NODE_ENV: "production"
+  TICKERFLOW_BASE_URL: "https://tickerflow.cgraaaj.in"
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+ingressRoute:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`optionscope.cgraaaj.in`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name:
+          port: 3000
+  tls:
+    secretName: "wildcard-cgraaaj-in-tls"
+
+vault:
+  enabled: true
+  path: "kv-v2"
+  addr: "http://hashicorpvault-agent-injector.hashicorp.svc.cluster.local:8200"
+  auth:
+    role: "optionscope-app-role"
+  agent:
+    limits:
+      cpu: "50m"
+      memory: "64Mi"
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+  secretVolumePath: "/vault/secrets"
+  volumeName: "vault-secrets"
+  addVolume: false
+  addVolumeMount: false
+  inject:
+    env: {}
+    secrets: {}
+    templates:
+      app-config: |
+        {{- with secret "kv-v2/data/optionscope/app-config" -}}
+        export TICKERFLOW_API_KEY="{{ .Data.data.TICKERFLOW_API_KEY }}"
+        export TICKERFLOW_BASE_URL="{{ .Data.data.TICKERFLOW_BASE_URL }}"
+        {{- end }}
+  env: {}
+
+runtime:
+  sourceInjectedFiles:
+    enabled: true
+    files:
+      - "app-config"
+
+resources: {}
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
