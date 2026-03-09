@@ -14,12 +14,18 @@ import {
 import type { Candle } from "@/types";
 import { toUnixSeconds, formatPrice } from "@/lib/utils";
 
+const IST_OFFSET = 19800; // +5:30 in seconds
+
 interface CandlestickChartProps {
   candles: Candle[];
   equityCandles?: Candle[];
   showOverlay: boolean;
   overlayOpacity: number;
   overlayForeground: "option" | "equity";
+}
+
+function toIST(c: Candle): number {
+  return toUnixSeconds(c.bucket) + IST_OFFSET;
 }
 
 function isValidCandle(c: Candle): boolean {
@@ -29,7 +35,7 @@ function isValidCandle(c: Candle): boolean {
 
 function toChartCandle(c: Candle): CandlestickData<Time> {
   return {
-    time: toUnixSeconds(c.bucket) as Time,
+    time: toIST(c) as Time,
     open: c.open,
     high: c.high,
     low: c.low,
@@ -39,7 +45,7 @@ function toChartCandle(c: Candle): CandlestickData<Time> {
 
 function toVolumeBar(c: Candle): HistogramData<Time> {
   return {
-    time: toUnixSeconds(c.bucket) as Time,
+    time: toIST(c) as Time,
     value: c.volume ?? 0,
     color: c.close >= c.open ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)",
   };
@@ -249,7 +255,7 @@ export function CandlestickChart({
 
     const valid = candles.filter(isValidCandle);
     const map = new Map<number, Candle>();
-    for (const c of valid) map.set(toUnixSeconds(c.bucket), c);
+    for (const c of valid) map.set(toIST(c), c);
     candleMapRef.current = map;
 
     optionSeriesRef.current.setData(valid.map(toChartCandle));
@@ -275,7 +281,7 @@ export function CandlestickChart({
     if (showOverlay && equityCandles && equityCandles.length > 0) {
       const valid = equityCandles.filter(isValidCandle);
       const map = new Map<number, Candle>();
-      for (const c of valid) map.set(toUnixSeconds(c.bucket), c);
+      for (const c of valid) map.set(toIST(c), c);
       equityCandleMapRef.current = map;
 
       chartRef.current.priceScale("left").applyOptions({ visible: true });
