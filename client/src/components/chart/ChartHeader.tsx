@@ -19,18 +19,18 @@ export function ChartHeader({ instrument, lastPrice }: ChartHeaderProps) {
     instrument.instrument_type === "CE" ? "text-green" : "text-red";
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2">
-      <span className="text-sm font-semibold text-text-primary">
+    <div className="flex items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-1.5 sm:py-2 flex-wrap min-w-0">
+      <span className="text-xs sm:text-sm font-semibold text-text-primary truncate max-w-[120px] sm:max-w-none">
         {instrument.trading_symbol}
       </span>
-      <span className={`text-xs font-medium ${typeColor}`}>
+      <span className={`text-[10px] sm:text-xs font-medium ${typeColor}`}>
         {instrument.instrument_type}
       </span>
-      <span className="text-xs text-text-muted">
+      <span className="hidden sm:inline text-xs text-text-muted">
         Strike: {formatPrice(instrument.strike_price)}
       </span>
       {lastPrice !== undefined && (
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-xs sm:text-sm font-semibold tabular-nums text-text-primary">
           {formatPrice(lastPrice)}
         </span>
       )}

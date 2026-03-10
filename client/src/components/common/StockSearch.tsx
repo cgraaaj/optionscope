@@ -62,7 +62,7 @@ export function StockSearch({
             setOpen(true);
             setQuery("");
           }}
-          className="bg-transparent text-text-primary text-sm outline-none w-36 placeholder:text-text-muted"
+          className="bg-transparent text-text-primary text-sm outline-none w-24 sm:w-36 placeholder:text-text-muted"
         />
       </div>
 

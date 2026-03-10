@@ -21,18 +21,19 @@ export function UnderlyingOverlay({
   isLoading,
 }: UnderlyingOverlayProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
       <button
         onClick={onToggle}
         className={cn(
-          "flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors",
+          "flex items-center gap-1.5 rounded-md border px-2 sm:px-2.5 py-1 text-[10px] sm:text-xs transition-colors",
           showOverlay
             ? "border-accent bg-accent/10 text-accent"
             : "border-border text-text-secondary hover:text-text-primary hover:bg-surface-hover"
         )}
       >
-        <Layers className="h-3.5 w-3.5" />
-        {showOverlay ? "Underlying ON" : "Show Underlying"}
+        <Layers className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+        <span className="hidden sm:inline">{showOverlay ? "Underlying ON" : "Show Underlying"}</span>
+        <span className="sm:hidden">{showOverlay ? "ON" : "Overlay"}</span>
         {isLoading && (
           <span className="ml-1 h-2 w-2 rounded-full bg-accent animate-pulse" />
         )}
@@ -43,7 +44,7 @@ export function UnderlyingOverlay({
           <button
             onClick={onForegroundToggle}
             className={cn(
-              "flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs transition-colors",
+              "flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] sm:text-xs transition-colors",
               "hover:bg-surface-hover"
             )}
             title={
@@ -65,7 +66,7 @@ export function UnderlyingOverlay({
             )}
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <EyeOff className="h-3 w-3 text-text-muted" />
             <input
               type="range"
@@ -74,7 +75,7 @@ export function UnderlyingOverlay({
               step="0.05"
               value={overlayOpacity}
               onChange={(e) => onOpacityChange(parseFloat(e.target.value))}
-              className="w-20 h-1 accent-accent"
+              className="w-14 sm:w-20 h-1 accent-accent"
             />
             <Eye className="h-3 w-3 text-text-muted" />
           </div>

@@ -16,7 +16,7 @@ export function ExpiryPicker({
 }: ExpiryPickerProps) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-text-muted uppercase tracking-wider">
+      <span className="hidden sm:inline text-xs text-text-muted uppercase tracking-wider">
         Expiry
       </span>
       <select

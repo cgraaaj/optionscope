@@ -86,36 +86,42 @@ export function OptionChainTable({
           <tr className="bg-surface">
             <th
               colSpan={4}
-              className="text-center text-green font-medium py-2 border-b border-border"
+              className="hidden sm:table-cell text-center text-green font-medium py-2 border-b border-border"
             >
               CALLS
             </th>
-            <th className="text-center text-text-muted font-medium py-2 border-b border-border border-x border-border-light">
+            <th className="sm:hidden text-center text-green font-medium py-1.5 border-b border-border text-[11px]">
+              CE
+            </th>
+            <th className="text-center text-text-muted font-medium py-1.5 sm:py-2 border-b border-border border-x border-border-light">
               STRIKE
             </th>
             <th
               colSpan={4}
-              className="text-center text-red font-medium py-2 border-b border-border"
+              className="hidden sm:table-cell text-center text-red font-medium py-2 border-b border-border"
             >
               PUTS
             </th>
+            <th className="sm:hidden text-center text-red font-medium py-1.5 border-b border-border text-[11px]">
+              PE
+            </th>
           </tr>
           <tr className="bg-surface text-text-muted">
-            <th className="py-1.5 px-2 text-right font-normal">OI</th>
-            <th className="py-1.5 px-2 text-right font-normal">Volume</th>
-            <th className="py-1.5 px-2 text-right font-normal">LTP</th>
-            <th className="py-1.5 px-2 text-right font-normal border-r border-border-light">
+            <th className="hidden sm:table-cell py-1.5 px-2 text-right font-normal">OI</th>
+            <th className="hidden sm:table-cell py-1.5 px-2 text-right font-normal">Vol</th>
+            <th className="py-1 sm:py-1.5 px-1.5 sm:px-2 text-right font-normal">LTP</th>
+            <th className="hidden sm:table-cell py-1.5 px-2 text-right font-normal border-r border-border-light">
               Chg%
             </th>
-            <th className="py-1.5 px-3 text-center font-semibold text-text-primary border-x border-border-light">
+            <th className="py-1 sm:py-1.5 px-1.5 sm:px-3 text-center font-semibold text-text-primary border-x border-border-light">
               Strike
             </th>
-            <th className="py-1.5 px-2 text-left font-normal border-l border-border-light">
+            <th className="hidden sm:table-cell py-1.5 px-2 text-left font-normal border-l border-border-light">
               Chg%
             </th>
-            <th className="py-1.5 px-2 text-left font-normal">LTP</th>
-            <th className="py-1.5 px-2 text-left font-normal">Volume</th>
-            <th className="py-1.5 px-2 text-left font-normal">OI</th>
+            <th className="py-1 sm:py-1.5 px-1.5 sm:px-2 text-left font-normal">LTP</th>
+            <th className="hidden sm:table-cell py-1.5 px-2 text-left font-normal">Vol</th>
+            <th className="hidden sm:table-cell py-1.5 px-2 text-left font-normal">OI</th>
           </tr>
         </thead>
         <tbody>
@@ -132,49 +138,49 @@ export function OptionChainTable({
                 key={row.strikePrice}
                 className="border-b border-border/50 hover:bg-surface-hover/50 transition-colors"
               >
-                <td className="py-1.5 px-2 text-right text-text-secondary tabular-nums">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-right text-text-secondary tabular-nums">
                   {ceData?.oi ? ceData.oi.toLocaleString() : "-"}
                 </td>
-                <td className="py-1.5 px-2 text-right text-text-secondary tabular-nums">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-right text-text-secondary tabular-nums">
                   {ceData?.volume ? ceData.volume.toLocaleString() : "-"}
                 </td>
                 <td
                   onClick={() => row.ce && onInstrumentSelect(row.ce)}
                   className={cn(
-                    "py-1.5 px-2 text-right tabular-nums",
-                    row.ce && "cursor-pointer hover:text-green",
+                    "py-1 sm:py-1.5 px-1.5 sm:px-2 text-right tabular-nums",
+                    row.ce && "cursor-pointer hover:text-green active:bg-green/10",
                     row.ce?.id === selectedInstrumentId && "text-green font-semibold",
                     ceData?.close ? "text-text-primary" : "text-text-muted"
                   )}
                 >
                   {ceData?.close ? formatPrice(ceData.close) : "-"}
                 </td>
-                <td className="py-1.5 px-2 text-right text-text-muted border-r border-border-light">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-right text-text-muted border-r border-border-light">
                   -
                 </td>
 
-                <td className="py-1.5 px-3 text-center font-semibold text-text-primary bg-surface/80 border-x border-border-light tabular-nums">
+                <td className="py-1 sm:py-1.5 px-1.5 sm:px-3 text-center font-semibold text-text-primary bg-surface/80 border-x border-border-light tabular-nums">
                   {formatPrice(row.strikePrice)}
                 </td>
 
-                <td className="py-1.5 px-2 text-left text-text-muted border-l border-border-light">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-left text-text-muted border-l border-border-light">
                   -
                 </td>
                 <td
                   onClick={() => row.pe && onInstrumentSelect(row.pe)}
                   className={cn(
-                    "py-1.5 px-2 text-left tabular-nums",
-                    row.pe && "cursor-pointer hover:text-red",
+                    "py-1 sm:py-1.5 px-1.5 sm:px-2 text-left tabular-nums",
+                    row.pe && "cursor-pointer hover:text-red active:bg-red/10",
                     row.pe?.id === selectedInstrumentId && "text-red font-semibold",
                     peData?.close ? "text-text-primary" : "text-text-muted"
                   )}
                 >
                   {peData?.close ? formatPrice(peData.close) : "-"}
                 </td>
-                <td className="py-1.5 px-2 text-left text-text-secondary tabular-nums">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-left text-text-secondary tabular-nums">
                   {peData?.volume ? peData.volume.toLocaleString() : "-"}
                 </td>
-                <td className="py-1.5 px-2 text-left text-text-secondary tabular-nums">
+                <td className="hidden sm:table-cell py-1.5 px-2 text-left text-text-secondary tabular-nums">
                   {peData?.oi ? peData.oi.toLocaleString() : "-"}
                 </td>
               </tr>

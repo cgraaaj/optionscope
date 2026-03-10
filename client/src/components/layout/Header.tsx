@@ -33,14 +33,14 @@ export function Header({
   onRefresh,
 }: HeaderProps) {
   return (
-    <header className="flex items-center gap-4 px-4 py-2 border-b border-border bg-surface shrink-0">
+    <header className="flex flex-wrap items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b border-border bg-surface shrink-0">
       <div className="flex items-center gap-1">
-        <span className="text-base font-semibold text-accent tracking-tight">
+        <span className="text-sm sm:text-base font-semibold text-accent tracking-tight">
           OptionScope
         </span>
       </div>
 
-      <div className="h-5 w-px bg-border" />
+      <div className="hidden sm:block h-5 w-px bg-border" />
 
       <StockSearch
         stocks={stocks}
@@ -49,7 +49,7 @@ export function Header({
         isLoading={stocksLoading}
       />
 
-      <div className="h-5 w-px bg-border" />
+      <div className="hidden sm:block h-5 w-px bg-border" />
 
       <ExpiryPicker
         expiries={expiries}
@@ -58,7 +58,7 @@ export function Header({
         isLoading={expiriesLoading}
       />
 
-      <div className="h-5 w-px bg-border" />
+      <div className="hidden sm:block h-5 w-px bg-border" />
 
       <DatePicker selectedDate={selectedDate} onSelect={onDateSelect} />
 
@@ -66,13 +66,13 @@ export function Header({
         <button
           onClick={onRefresh}
           className={cn(
-            "flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5",
-            "text-sm text-text-secondary hover:text-text-primary hover:bg-surface-hover",
+            "flex items-center gap-1.5 rounded-md border border-border px-2 sm:px-3 py-1.5",
+            "text-xs sm:text-sm text-text-secondary hover:text-text-primary hover:bg-surface-hover",
             "transition-colors"
           )}
         >
           <RefreshCw className="h-3.5 w-3.5" />
-          Refresh
+          <span className="hidden sm:inline">Refresh</span>
         </button>
       </div>
     </header>

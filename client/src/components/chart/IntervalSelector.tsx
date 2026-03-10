@@ -27,7 +27,7 @@ export function IntervalSelector({
           key={value}
           onClick={() => onSelect(value)}
           className={cn(
-            "rounded px-2.5 py-1 text-xs font-medium transition-colors",
+            "rounded px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium transition-colors",
             selected === value
               ? "bg-accent text-white"
               : "text-text-secondary hover:text-text-primary hover:bg-surface-hover"

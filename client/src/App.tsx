@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { BarChart3, List } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { OptionChainTable } from "@/components/option-chain/OptionChainTable";
 import { HolidayList, getNonTradingReason } from "@/components/option-chain/HolidayList";
@@ -13,7 +14,7 @@ import { useExpiries } from "@/hooks/useExpiries";
 import { useInstruments } from "@/hooks/useInstruments";
 import { useCandles } from "@/hooks/useCandles";
 import { useEquityCandles } from "@/hooks/useEquityCandles";
-import { startOfDayIST, endOfDayIST, formatDate } from "@/lib/utils";
+import { startOfDayIST, endOfDayIST, formatDate, cn } from "@/lib/utils";
 import type { Stock, Instrument, Interval } from "@/types";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     useState<Instrument | null>(null);
   const [interval, setInterval] = useState<Interval>("5m");
 
+  const [mobileTab, setMobileTab] = useState<"chain" | "chart">("chain");
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(0.35);
   const [overlayForeground, setOverlayForeground] = useState<
@@ -125,6 +127,114 @@ function App() {
     queryClient.invalidateQueries();
   }, [queryClient]);
 
+  const optionChainPanel = (
+    <>
+      <div className="px-3 py-2 border-b border-border bg-surface">
+        <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+          Option Chain
+        </span>
+        {selectedStock && selectedExpiry && (
+          <span className="ml-2 text-xs text-text-muted">
+            {selectedStock.name} &middot; {selectedExpiry}
+          </span>
+        )}
+      </div>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-auto">
+          <OptionChainTable
+            rows={optionChain}
+            isLoading={chainLoading}
+            onInstrumentSelect={(inst) => {
+              handleInstrumentSelect(inst);
+              setMobileTab("chart");
+            }}
+            selectedInstrumentId={selectedInstrument?.id}
+            startOfDay={startOfDay}
+            endOfDay={endOfDay}
+          />
+        </div>
+        <HolidayList selectedDate={selectedDate} />
+      </div>
+    </>
+  );
+
+  const chartPanel = (
+    <>
+      <div className="flex items-center justify-between border-b border-border bg-surface px-2 flex-wrap gap-1">
+        <ChartHeader
+          instrument={selectedInstrument}
+          lastPrice={lastPrice}
+        />
+        <div className="flex items-center gap-1 sm:gap-3 pr-2">
+          <IntervalSelector selected={interval} onSelect={setInterval} />
+        </div>
+      </div>
+
+      {selectedInstrument && (
+        <div className="flex items-center gap-2 px-2 sm:px-4 py-1.5 border-b border-border bg-surface/50 flex-wrap">
+          <UnderlyingOverlay
+            showOverlay={showOverlay}
+            onToggle={() => setShowOverlay((v) => !v)}
+            overlayOpacity={overlayOpacity}
+            onOpacityChange={setOverlayOpacity}
+            foreground={overlayForeground}
+            onForegroundToggle={() =>
+              setOverlayForeground((v) =>
+                v === "option" ? "equity" : "option"
+              )
+            }
+            isLoading={equityCandlesLoading}
+          />
+          {showOverlay && (
+            <div className="hidden sm:flex items-center gap-3 ml-auto text-[10px] text-text-muted">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-sm bg-green" />
+                Option Up
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-sm bg-red" />
+                Option Down
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-sm bg-accent" />
+                Equity Up
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2 h-2 rounded-sm bg-orange-500" />
+                Equity Down
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 relative">
+        {candlesLoading && selectedInstrument && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+            <span className="text-sm text-text-muted">Loading chart...</span>
+          </div>
+        )}
+        {selectedInstrument ? (
+          <CandlestickChart
+            candles={candles}
+            equityCandles={equityCandles}
+            showOverlay={showOverlay}
+            overlayOpacity={overlayOpacity}
+            overlayForeground={overlayForeground}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-text-muted text-sm text-center px-4">
+              {selectedStock
+                ? "Select a strike from the option chain"
+                : "Search for a stock to get started"}
+            </p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div className="flex flex-col h-screen">
       <Header
@@ -141,112 +251,50 @@ function App() {
         onRefresh={handleRefresh}
       />
 
-      <div className="flex flex-1 min-h-0">
-        {/* Option Chain - Left Panel */}
-        <div className="w-[480px] shrink-0 border-r border-border flex flex-col">
-          <div className="px-3 py-2 border-b border-border bg-surface">
-            <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-              Option Chain
-            </span>
-            {selectedStock && selectedExpiry && (
-              <span className="ml-2 text-xs text-text-muted">
-                {selectedStock.name} &middot; {selectedExpiry}
-              </span>
-            )}
-          </div>
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="flex-1 min-h-0 overflow-auto">
-              <OptionChainTable
-                rows={optionChain}
-                isLoading={chainLoading}
-                onInstrumentSelect={handleInstrumentSelect}
-                selectedInstrumentId={selectedInstrument?.id}
-                startOfDay={startOfDay}
-                endOfDay={endOfDay}
-              />
-            </div>
-            <HolidayList selectedDate={selectedDate} />
-          </div>
-        </div>
-
-        {/* Chart - Right Panel */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex items-center justify-between border-b border-border bg-surface px-2">
-            <ChartHeader
-              instrument={selectedInstrument}
-              lastPrice={lastPrice}
-            />
-            <div className="flex items-center gap-3 pr-2">
-              <IntervalSelector selected={interval} onSelect={setInterval} />
-            </div>
-          </div>
-
-          {selectedInstrument && (
-            <div className="flex items-center gap-2 px-4 py-1.5 border-b border-border bg-surface/50">
-              <UnderlyingOverlay
-                showOverlay={showOverlay}
-                onToggle={() => setShowOverlay((v) => !v)}
-                overlayOpacity={overlayOpacity}
-                onOpacityChange={setOverlayOpacity}
-                foreground={overlayForeground}
-                onForegroundToggle={() =>
-                  setOverlayForeground((v) =>
-                    v === "option" ? "equity" : "option"
-                  )
-                }
-                isLoading={equityCandlesLoading}
-              />
-              {showOverlay && (
-                <div className="flex items-center gap-3 ml-auto text-[10px] text-text-muted">
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-sm bg-green" />
-                    Option Up
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-sm bg-red" />
-                    Option Down
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-sm bg-accent" />
-                    Equity Up
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-sm bg-orange-500" />
-                    Equity Down
-                  </span>
-                </div>
-              )}
-            </div>
+      {/* Mobile tab switcher */}
+      <div className="md:hidden flex border-b border-border bg-surface shrink-0">
+        <button
+          onClick={() => setMobileTab("chain")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors",
+            mobileTab === "chain"
+              ? "text-accent border-b-2 border-accent"
+              : "text-text-muted"
           )}
+        >
+          <List className="h-3.5 w-3.5" />
+          Chain
+        </button>
+        <button
+          onClick={() => setMobileTab("chart")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors",
+            mobileTab === "chart"
+              ? "text-accent border-b-2 border-accent"
+              : "text-text-muted"
+          )}
+        >
+          <BarChart3 className="h-3.5 w-3.5" />
+          Chart
+        </button>
+      </div>
 
-          <div className="flex-1 min-h-0 relative">
-            {candlesLoading && selectedInstrument && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-                <span className="text-sm text-text-muted">
-                  Loading chart...
-                </span>
-              </div>
-            )}
-            {selectedInstrument ? (
-              <CandlestickChart
-                candles={candles}
-                equityCandles={equityCandles}
-                showOverlay={showOverlay}
-                overlayOpacity={overlayOpacity}
-                overlayForeground={overlayForeground}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <p className="text-text-muted text-sm">
-                    {selectedStock
-                      ? "Select a strike from the option chain to view chart"
-                      : "Search for a stock to get started"}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+      {/* Mobile: tab content */}
+      <div className="flex-1 min-h-0 flex flex-col md:hidden">
+        {mobileTab === "chain" ? (
+          <div className="flex-1 min-h-0 flex flex-col">{optionChainPanel}</div>
+        ) : (
+          <div className="flex-1 min-h-0 flex flex-col">{chartPanel}</div>
+        )}
+      </div>
+
+      {/* Desktop: side-by-side */}
+      <div className="hidden md:flex flex-1 min-h-0">
+        <div className="w-[480px] lg:w-[520px] shrink-0 border-r border-border flex flex-col">
+          {optionChainPanel}
+        </div>
+        <div className="flex-1 flex flex-col min-w-0">
+          {chartPanel}
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ export function DatePicker({ selectedDate, onSelect }: DatePickerProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-text-muted uppercase tracking-wider">
+      <span className="hidden sm:inline text-xs text-text-muted uppercase tracking-wider">
         Date
       </span>
       <div className="flex items-center gap-1">
