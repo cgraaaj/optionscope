@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: registry.cgraaaj.in/stock-x/optionscope-app
   pullPolicy: IfNotPresent
-  tag: "fcff408"
+  tag: "d06cad6"
 
 imagePullSecrets: []
 nameOverride: ""
