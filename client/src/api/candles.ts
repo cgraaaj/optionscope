@@ -22,7 +22,11 @@ export function getTicks(params: {
   return apiFetch<TickApiResponse>("/api/v1/ticks/", params);
 }
 
-/** Batch-fetch ticks for many instruments (API allows max 50 per request). */
+/**
+ * Batch-fetch ticks for many instruments (API allows max 50 per request).
+ * start/end should be IST day boundaries in UTC (e.g. from startOfDayIST/endOfDayIST).
+ * Empty results mean TickerFlow has no tick data for that date (e.g. future or not ingested).
+ */
 export async function getTicksBatched(
   instrumentIds: number[],
   options?: { start?: string; end?: string; limitPerInstrument?: number }

@@ -201,15 +201,23 @@ export function CandlestickChart({
     const chart = initChart();
     if (!chart || !containerRef.current) return;
 
-    const observer = new ResizeObserver(() => {
+    const applySize = () => {
       if (containerRef.current) {
-        chart.applyOptions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        });
+        const w = containerRef.current.clientWidth;
+        const h = containerRef.current.clientHeight;
+        if (w > 0 && h > 0) {
+          chart.applyOptions({ width: w, height: h });
+        }
       }
-    });
+    };
+
+    const observer = new ResizeObserver(applySize);
     observer.observe(containerRef.current);
+    // Ensure size is applied after layout (e.g. when switching to Chart tab on mobile)
+    let rafId = requestAnimationFrame(() => {
+      applySize();
+      rafId = requestAnimationFrame(applySize);
+    });
 
     chart.subscribeCrosshairMove((param) => {
       const tip = tooltipRef.current;
@@ -243,6 +251,7 @@ export function CandlestickChart({
     });
 
     return () => {
+      cancelAnimationFrame(rafId);
       observer.disconnect();
       chart.remove();
       chartRef.current = null;

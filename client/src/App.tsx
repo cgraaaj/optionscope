@@ -208,20 +208,22 @@ function App() {
         </div>
       )}
 
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-[280px] relative flex flex-col overflow-hidden">
         {candlesLoading && selectedInstrument && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
             <span className="text-sm text-text-muted">Loading chart...</span>
           </div>
         )}
         {selectedInstrument ? (
-          <CandlestickChart
-            candles={candles}
-            equityCandles={equityCandles}
-            showOverlay={showOverlay}
-            overlayOpacity={overlayOpacity}
-            overlayForeground={overlayForeground}
-          />
+          <div className="flex-1 min-h-[280px] w-full">
+            <CandlestickChart
+              candles={candles}
+              equityCandles={equityCandles}
+              showOverlay={showOverlay}
+              overlayOpacity={overlayOpacity}
+              overlayForeground={overlayForeground}
+            />
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-text-muted text-sm text-center px-4">
