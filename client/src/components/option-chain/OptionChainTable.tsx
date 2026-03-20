@@ -65,16 +65,19 @@ export function OptionChainTable({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-text-muted text-sm">
-        Loading option chain...
+      <div className="flex flex-col items-center justify-center h-full gap-2.5">
+        <div className="h-5 w-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs text-text-muted">Loading option chain...</span>
       </div>
     );
   }
 
   if (rows.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-text-muted text-sm">
-        Select a stock and expiry to view the option chain
+      <div className="flex items-center justify-center h-full">
+        <p className="text-text-muted/60 text-xs text-center px-4">
+          Select a stock and expiry to view the option chain
+        </p>
       </div>
     );
   }

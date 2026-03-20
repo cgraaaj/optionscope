@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BarChart3, List } from "lucide-react";
+import { BarChart3, List, TrendingUp, MousePointerClick } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { OptionChainTable } from "@/components/option-chain/OptionChainTable";
 import { HolidayList, getNonTradingReason } from "@/components/option-chain/HolidayList";
@@ -35,7 +35,9 @@ function App() {
   >("option");
 
   const { data: stocks = [], isLoading: stocksLoading } = useStocks();
-  const { data: expiries = [], isLoading: expiriesLoading } = useExpiries();
+  const { data: expiries = [], isLoading: expiriesLoading } = useExpiries(
+    selectedStock?.name
+  );
   const { data: optionChain = [], isLoading: chainLoading } = useInstruments(
     selectedStock?.name,
     selectedExpiry ?? undefined
@@ -129,15 +131,17 @@ function App() {
 
   const optionChainPanel = (
     <>
-      <div className="px-3 py-2 border-b border-border bg-surface">
-        <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
-          Option Chain
-        </span>
-        {selectedStock && selectedExpiry && (
-          <span className="ml-2 text-xs text-text-muted">
-            {selectedStock.name} &middot; {selectedExpiry}
+      <div className="px-3 py-2 border-b border-border bg-gradient-to-r from-surface to-surface-elevated">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">
+            Option Chain
           </span>
-        )}
+          {selectedStock && selectedExpiry && (
+            <span className="text-[10px] text-text-secondary bg-surface-hover/60 px-2 py-0.5 rounded-full">
+              {selectedStock.name} &middot; {selectedExpiry}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="flex-1 min-h-0 overflow-auto">
@@ -160,7 +164,7 @@ function App() {
 
   const chartPanel = (
     <>
-      <div className="flex items-center justify-between border-b border-border bg-surface px-2 flex-wrap gap-1">
+      <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-surface to-surface-elevated px-2 flex-wrap gap-1">
         <ChartHeader
           instrument={selectedInstrument}
           lastPrice={lastPrice}
@@ -210,8 +214,11 @@ function App() {
 
       <div className="flex-1 min-h-[280px] relative flex flex-col overflow-hidden">
         {candlesLoading && selectedInstrument && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
-            <span className="text-sm text-text-muted">Loading chart...</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+            <div className="flex items-center gap-2.5 bg-surface/90 border border-border/60 rounded-lg px-4 py-2.5 shadow-lg">
+              <div className="h-4 w-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-text-secondary">Loading chart...</span>
+            </div>
           </div>
         )}
         {selectedInstrument ? (
@@ -226,11 +233,26 @@ function App() {
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-text-muted text-sm text-center px-4">
-              {selectedStock
-                ? "Select a strike from the option chain"
-                : "Search for a stock to get started"}
-            </p>
+            <div className="text-center space-y-3 px-4">
+              {selectedStock ? (
+                <>
+                  <MousePointerClick className="h-8 w-8 text-text-muted/40 mx-auto" />
+                  <p className="text-text-muted text-sm">
+                    Select a strike from the option chain
+                  </p>
+                </>
+              ) : (
+                <>
+                  <TrendingUp className="h-8 w-8 text-text-muted/40 mx-auto" />
+                  <p className="text-text-muted text-sm">
+                    Search for a stock to get started
+                  </p>
+                  <p className="text-text-muted/60 text-xs">
+                    Select a stock, expiry, and strike price to view the chart
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -258,10 +280,10 @@ function App() {
         <button
           onClick={() => setMobileTab("chain")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors",
+            "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all duration-200",
             mobileTab === "chain"
-              ? "text-accent border-b-2 border-accent"
-              : "text-text-muted"
+              ? "text-accent border-b-2 border-accent bg-accent/5"
+              : "text-text-muted hover:text-text-secondary"
           )}
         >
           <List className="h-3.5 w-3.5" />
@@ -270,10 +292,10 @@ function App() {
         <button
           onClick={() => setMobileTab("chart")}
           className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors",
+            "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all duration-200",
             mobileTab === "chart"
-              ? "text-accent border-b-2 border-accent"
-              : "text-text-muted"
+              ? "text-accent border-b-2 border-accent bg-accent/5"
+              : "text-text-muted hover:text-text-secondary"
           )}
         >
           <BarChart3 className="h-3.5 w-3.5" />

@@ -1,11 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { getExpiries } from "@/api/instruments";
+import { getInstruments } from "@/api/instruments";
 
-export function useExpiries(instrumentType?: string) {
+export function useExpiries(stockName?: string) {
   return useQuery({
-    queryKey: ["expiries", instrumentType],
-    queryFn: () => getExpiries({ instrument_type: instrumentType }),
+    queryKey: ["expiries", stockName],
+    queryFn: () =>
+      getInstruments({ stock_name: stockName, limit: 2000 }),
+    enabled: !!stockName,
     staleTime: 5 * 60_000,
-    select: (data) => data.results.map((e) => e.expiry),
+    select: (data) => {
+      const set = new Set<string>();
+      for (const inst of data.results) {
+        if (inst.expiry) set.add(inst.expiry);
+      }
+      return Array.from(set).sort();
+    },
   });
 }
