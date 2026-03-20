@@ -27,6 +27,11 @@ export function StockSearch({
       )
     : stocks;
 
+  const activeFirst = [...filtered].sort((a, b) => {
+    if (a.is_active === b.is_active) return a.name.localeCompare(b.name);
+    return a.is_active ? -1 : 1;
+  });
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -44,7 +49,7 @@ export function StockSearch({
     <div ref={containerRef} className="relative">
       <div
         className={cn(
-          "flex items-center gap-2 rounded-lg border border-border/60 bg-surface px-3 py-1.5",
+          "flex items-center gap-1.5 rounded-lg border border-border/60 bg-surface px-3 py-1.5",
           "focus-within:border-accent focus-within:ring-1 focus-within:ring-accent/30 transition-all duration-200"
         )}
       >
@@ -64,11 +69,16 @@ export function StockSearch({
           }}
           className="bg-transparent text-text-primary text-sm outline-none w-24 sm:w-36 placeholder:text-text-muted/70"
         />
+        {!open && selectedStock && !selectedStock.is_active && (
+          <span className="shrink-0 text-[9px] font-medium px-1 py-0.5 rounded bg-yellow-500/15 text-yellow-500 leading-none">
+            OLD
+          </span>
+        )}
       </div>
 
-      {open && filtered.length > 0 && (
+      {open && activeFirst.length > 0 && (
         <div className="absolute top-full left-0 mt-1.5 w-64 max-h-72 overflow-y-auto rounded-lg border border-border/60 bg-surface-elevated shadow-xl shadow-black/30 z-50 backdrop-blur-sm">
-          {filtered.slice(0, 50).map((stock) => (
+          {activeFirst.slice(0, 50).map((stock) => (
             <button
               key={stock.id}
               onClick={() => {
@@ -77,13 +87,18 @@ export function StockSearch({
                 setOpen(false);
               }}
               className={cn(
-                "w-full text-left px-3 py-2 text-sm transition-colors",
+                "w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2",
                 selectedStock?.id === stock.id
                   ? "bg-accent/10 text-accent font-medium"
                   : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
               )}
             >
-              {stock.name}
+              <span className="truncate">{stock.name}</span>
+              {!stock.is_active && (
+                <span className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-500">
+                  DELISTED
+                </span>
+              )}
             </button>
           ))}
         </div>
