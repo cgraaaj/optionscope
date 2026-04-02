@@ -25,6 +25,16 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/debug/config", (_req, res) => {
+  res.json({
+    tickerflow_base_url: TICKERFLOW_BASE_URL,
+    has_api_key: !!TICKERFLOW_API_KEY && TICKERFLOW_API_KEY !== "your-api-key-here",
+    api_key_prefix: TICKERFLOW_API_KEY ? TICKERFLOW_API_KEY.slice(0, 6) + "…" : "(empty)",
+    node_env: process.env.NODE_ENV,
+    port: PORT,
+  });
+});
+
 app.use(
   "/api",
   createProxyMiddleware({
@@ -34,6 +44,19 @@ app.use(
     on: {
       proxyReq: (proxyReq) => {
         proxyReq.setHeader("X-API-KEY", TICKERFLOW_API_KEY);
+      },
+      error: (err, _req, res) => {
+        console.error("Proxy error:", err.message, "| target:", TICKERFLOW_BASE_URL);
+        if ("writeHead" in res && typeof res.writeHead === "function") {
+          (res as import("http").ServerResponse).writeHead(502, { "Content-Type": "application/json" });
+          (res as import("http").ServerResponse).end(
+            JSON.stringify({
+              error: "proxy_error",
+              message: err.message,
+              target: TICKERFLOW_BASE_URL,
+            })
+          );
+        }
       },
     },
   })
