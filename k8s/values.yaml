@@ -32,7 +32,7 @@ service:
 
 env:
   NODE_ENV: "production"
-  TICKERFLOW_BASE_URL: "https://tickerflow.cgraaaj.in"
+  TICKERFLOW_BASE_URL: "http://tickerflow-k8s.tickerflow.svc.cluster.local:8000"
 
 ingress:
   enabled: false
